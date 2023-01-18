@@ -1,0 +1,32 @@
+﻿@using EmployeeISBlazer.Models;
+<div class="row justify-content-start" style="position:relative">
+    <div class="col-9" style="overflow:scroll;position:relative;height:180px">
+        <table class="table table-bordered" style="overflow:scroll" border="1">
+            <thead class="">
+                <tr style="text-align:left;">
+                    <th scope="col" width="20%">QID</th>
+                    <th scope="col" width="50%">Qulification Name</th>
+                    <th scope="col" width="30%">Marks</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (datas != null)
+                {
+                    @foreach (var data in datas)
+                    {
+                        <tr>
+                            <td>@data.QID.ToString()</td>
+                            <td>@data.Name</td>
+                            <td>@data.Marks</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Data> datas { get; set; } = new List<Data>();
+}

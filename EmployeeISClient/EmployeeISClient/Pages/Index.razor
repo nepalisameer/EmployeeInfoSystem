@@ -1,0 +1,259 @@
+﻿@page "/"
+@using System.Text.Json;
+@using BlazorStrap;
+@using EmployeeISBlazer.Models;
+@using EmployeeISBlazer.Repository;
+@using System.ComponentModel.DataAnnotations;
+@using EmployeeISBlazer.Component;
+@inject HttpClient Http
+<PageTitle>Index</PageTitle>
+<MyNavBar></MyNavBar>
+<BSContainer Container="Container.Fluid">
+    @*<EditForm Model="@employeeFormModel" OnValidSubmit="@HandleValidSubmit">*@
+    <BSForm Model="employeeFormModel" Gutters="Gutters.Medium" OnValidSubmit="OnSubmit" OnReset="OnReset">
+        <div class="row justify-content-start" style=" position:relative;padding-top:1em;border:solid;border-color:black;height:auto">
+            <AllRegisteredEmployee employees="employees"></AllRegisteredEmployee>
+            <div class="col-8" style="padding-left:2em; position:relative">
+                <DataAnnotationsValidator />
+                @*<ValidationSummary />*@
+                <div class="row justify-content-start">
+                    <div class="col-2" style="padding-bottom:1em">
+                        <label>Name*</label>
+                    </div>
+                    <div class="col-5">
+                        <BSInput InputType="InputType.Text" @bind-Value=employeeFormModel.Name ValidateOnInput=true></BSInput>
+                        <BSFeedback For="@(()=>employeeFormModel.Name)"></BSFeedback>
+                        @*<input @bind="employeeFormModel.Name" @bind:event="oninput" type="text" style="width:300px" required />*@
+                    </div>
+                </div>
+                <div class="row justify-content-start" style=" padding-bottom:1em">
+                    <div class="col-2">
+                    </div>
+                    <div class="col-6">
+                        <label>Gender*</label>
+                        <br />
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" required name="myradio" id="maleRadio" value="M" @onchange="GenderValueChange">
+                            <label class="form-check-label" for="maleRadio">
+                                Male
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" required name="myradio" id="femaleRadio" value="F" @onchange="GenderValueChange">
+                            <label class="form-check-label" for="femaleRadio">
+                                Female
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" required name="myradio" id="thirdGenderRadio" value="O" @onchange="GenderValueChange">
+                            <label class="form-check-label" for="thirdGenderRadio">
+                                Third Gender
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-start" style="padding-bottom:1em">
+                    <div class="col-2">
+                        <label>DOB*</label>
+                    </div>
+                    <div class="col-2">
+                        <BSInput InputType="InputType.Date" @bind-Value=employeeFormModel.DateOfBirth ValidateOnInput=true></BSInput>
+                        <BSFeedback For="@(()=>employeeFormModel.DateOfBirth)"></BSFeedback>
+                        @*<input @bind="employeeFormModel.DateOfBirth" @bind:event="oninput" type="date" required />*@
+                    </div>
+                    <div class="col-2">
+                        <label>(YYYY/MM/DD)</label>
+                    </div>
+                </div>
+                <div class="row justify-content-start" style="padding-bottom:1em">
+                    <div class="col-2">
+                        <label>Salary</label>
+                    </div>
+                    <div class="col-2">
+                        <BSInput InputType="InputType.Number" @bind-Value=employeeFormModel.Salary></BSInput>
+                        @*<input @bind="employeeFormModel.Salary" @bind:event="oninput" type="number" style="width:150px" required />*@
+                    </div>
+                </div>
+
+                <div class="row justify-content-start" style="padding-bottom:1em;border:solid;border-color:black;border-radius:12px;border-right:none">
+                    <div class="row justify-content-start" style=" padding-bottom:1em">
+                        <div class="col-12">
+                            <label style="font:bold">Employeer Qulification</label>
+                        </div>
+                    </div>
+                    <div class="row justify-content-start" style=" padding-bottom:2em">
+                        <div class="col-2">
+                            <label>Qulification:</label>
+
+                        </div>
+                        <div class="col-2">
+                            <select class="dropdown-toggle" @onchange="SetDropDownText">
+                                <option selected value="-1">--Select--</option>
+                                @if (qualifications != null)
+                                {
+                                    @foreach (var item in qualifications)
+                                    {
+                                        <option value="@item.Qid">@item.QName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-1">
+                            <label>Marks:</label>
+                        </div>
+                        <div class="col-2">
+                            <BSInput InputType="InputType.Text" @bind-Value=employeeFormModel.Marks IsPlainText=false ValidateOnInput=true></BSInput>
+                            <BSFeedback For="@(()=>employeeFormModel.Marks)"></BSFeedback>
+                            @*<input @bind="employeeFormModel.Marks" @bind:event="oninput" style="width:60px" type="number" />*@
+                        </div>
+                        <div class="col-2">
+                            <BSButton Color="BSColor.Primary" IsSubmit=false OnClick="Add">Add</BSButton>
+                        </div>
+                    </div>
+                    <AddQualification datas="datas"></AddQualification>
+                </div>
+                <div class="row justify-content-start" style="clear:both;padding-top:2em;padding-bottom:2em;position:relative">
+
+                    <div class="col-5">
+                    </div>
+                    <div class="col-3">
+                        <BSLabel style="color:green;font-size:large;background-color:lightblue" IsHidden=@hideSuccess>Submitted Successfully.</BSLabel>
+                    </div>
+                    <div class="col-2" style="text-align:right">
+                        @*<button type="submit"> Submit</button>*@
+                        <BSButton Color="BSColor.Primary" IsSubmit=true>Submit</BSButton>
+                    </div>
+                    <div class="col-2">
+                        <BSButton Color="BSColor.Danger" IsReset=true>Cancel</BSButton>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </BSForm>
+    @*</EditForm>*@
+</BSContainer>
+@code {
+    public class EmployeeFormModel
+    {
+        [Required(ErrorMessage = "Name can't be Empty")]
+        [StringLength(200, ErrorMessage = "Name is too long.")]
+        public string Name { get; set; }
+        [Required(ErrorMessage = "Select at least one value")]
+        public string Gender { get; set; }
+        [Required(ErrorMessage = "Date can't be Empty")]
+        public DateTime DateOfBirth { get; set; } = DateTime.Now;
+        public decimal? Salary { get; set; } = null;
+        [Required(ErrorMessage = "Marks Required")]
+        public decimal? Marks { get; set; } = null;
+    }
+    public bool hideSuccess { get; set; } = true;
+    private EmployeeFormModel employeeFormModel = new();
+    private int DropDownSelectValue { get; set; }
+    private string DropDownText { get; set; } = "";
+
+    private string Qualificationname { get; set; } = "";
+    public List<Data> datas { get; set; } = new List<Data>();
+    public List<QualiList> qualifications { get; set; } = new List<QualiList>();
+
+    public List<Employee> employees { get; set; } = new List<Employee>();
+    public string ModalTargetName { get; set; } = "";
+    [Inject]
+    public IEmployeeIS Repo { get; set; }
+    public event Action<Employee> OnUpdate;
+    protected override async Task OnInitializedAsync()
+    {
+        //binding employees list
+        employees = await Repo.GetAll();
+        qualifications = await Repo.GetAllQualiList();
+        OnUpdate += Update;
+    }
+
+    void Update(Employee e)
+    {
+        employees.Add(e);
+    }
+
+    public void GenderValueChange(ChangeEventArgs e)
+    {
+        employeeFormModel.Gender = e.Value.ToString();
+    }
+    public void SetDropDownText(ChangeEventArgs e)
+    {
+        DropDownSelectValue = Convert.ToInt32(e.Value);
+        if (DropDownSelectValue == -1)
+        {
+            return;
+        }
+        if (qualifications.Count > 0)
+        {
+            var quali = qualifications.Where(q => q.Qid == DropDownSelectValue).FirstOrDefault();
+            if (quali != null)
+            {
+                DropDownText = quali.QName;
+            }
+        }
+    }
+    public async Task Add()
+    {
+        if (employeeFormModel.Marks == null)
+        {
+            //set message
+            return;
+        }
+        if (DropDownSelectValue == -1)
+        {
+            // set message
+            return;
+        }
+        var a = employeeFormModel.Marks;
+        var data = new Data
+            {
+                Marks = Convert.ToDecimal(employeeFormModel.Marks),
+                Name = employeeFormModel.Name,
+                QID = DropDownSelectValue
+            };
+        datas.Add(data);
+    }
+    private async Task OnSubmit(EditContext e)
+    {
+        if (e.Validate())
+        {
+            if (DropDownSelectValue == -1 || DropDownSelectValue == 0)
+            {
+                //show message
+                return;
+            }
+            await RegisterDetail();
+            hideSuccess = false;
+
+        }
+    }
+    private void OnReset(IBSForm bSForm)
+    {
+        hideSuccess = true;
+        bSForm.Reset();
+        datas.Clear();
+    }
+    public async Task RegisterDetail()
+    {
+        var employee = new Employee
+            {
+                dob = employeeFormModel.DateOfBirth,
+                salary = employeeFormModel.Salary ?? 0,
+                empName = employeeFormModel.Name,
+                entryBy = "Sameer",
+                entryDate = DateTime.Now,
+                gender = employeeFormModel.Gender,
+            };
+        var response = await Repo.Register(new RegisterEmployeeDetail
+            {
+                marks = employeeFormModel.Marks ?? 0,
+                qualificationListId = DropDownSelectValue,
+                employee = employee
+            });
+        OnUpdate?.Invoke(response);
+        employeeFormModel = new();
+    }
+}

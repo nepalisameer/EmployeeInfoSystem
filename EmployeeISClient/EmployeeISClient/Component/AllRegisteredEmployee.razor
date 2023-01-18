@@ -1,0 +1,35 @@
+﻿@using EmployeeISBlazer.Models;
+@using EmployeeISBlazer.Repository;
+<div class="col-4" style="overflow:scroll;position:relative;height:525px">
+    <table id="emp" class="table table-bordered" border="1">
+        <thead class="">
+            <tr style="text-align:left;">
+                <th scope="col" width="30%">Employee ID</th>
+                <th scope="col" width="69%">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (employees != null)
+            {
+                @foreach (var employee in employees)
+                {
+                    <tr>
+                        <td>@employee.employeeId.ToString()</td>
+                        <td>@employee.empName</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public List<Employee> employees { get; set; } = new List<Employee>();
+    public Action OnUpdate;
+    protected override async Task OnInitializedAsync()
+    {
+        OnUpdate += StateHasChanged;
+
+    }
+}
